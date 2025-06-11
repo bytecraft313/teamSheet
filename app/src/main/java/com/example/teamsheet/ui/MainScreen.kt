@@ -1,32 +1,81 @@
 package com.example.teamsheet.ui
-import androidx.lifecycle.viewmodel.compose.viewModel
+
+
 import androidx.compose.foundation.layout.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.example.teamsheet.data.Team
-import com.example.teamsheet.ui.components.PlayerList
-import com.example.teamsheet.viewmodel.LineupViewModel
+import androidx.compose.ui.Alignment
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import com.example.teamsheet.data.Player
 
 @Composable
-fun MainScreen(viewModel: LineupViewModel = viewModel()) {
-    val players by viewModel.players.collectAsState()
+fun MainScreen() {
+    var playerName by remember { mutableStateOf("") }
+    var isReserve by remember { mutableStateOf(false) }
+    var players by remember { mutableStateOf(listOf<Player>()) }
 
-    val teamA = players.filter { it.team == Team.A }
-    val teamB = players.filter { it.team == Team.B }
-    val unassigned = players.filter { it.team == Team.NONE }
+    Column(modifier = Modifier.padding(16.dp)) {
+        OutlinedTextField(
+            value = playerName,
+            onValueChange = { playerName = it },
+            label = { Text("Player Name") },
+            modifier = Modifier.fillMaxWidth()
+        )
 
-    Row(modifier = Modifier.fillMaxSize().padding(16.dp), horizontalArrangement = Arrangement.SpaceEvenly) {
-        PlayerList("Team A", teamA) { player ->
-            viewModel.assignPlayerToTeam(player.id, Team.B)
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Checkbox(
+                checked = isReserve,
+                onCheckedChange = { isReserve = it }
+            )
+            Text("Reserve Player")
         }
-        PlayerList("Unassigned", unassigned) { player ->
-            viewModel.assignPlayerToTeam(player.id, Team.A)
+
+        Button(
+            onClick = {
+                if (playerName.isNotBlank()) {
+                    val newPlayer = Player(
+                        id = (players.maxOfOrNull { it.id } ?: 0) + 1,
+                        name = playerName,
+                        isReserve = isReserve
+                    )
+                    players = players + newPlayer
+                    playerName = ""
+                    isReserve = false
+                }
+            },
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Text("Add Player")
         }
-        PlayerList("Team B", teamB) { player ->
-            viewModel.assignPlayerToTeam(player.id, Team.A)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        LazyColumn {
+            items(players) { player ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "${player.name} ${if (player.isReserve) "(Reserve)" else ""}",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    IconButton(onClick = {
+                        players = players.filterNot { it.id == player.id }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Default.Delete,
+                            contentDescription = "Remove player"
+                        )
+                    }
+                }
+            }
         }
-    }
-}
+
