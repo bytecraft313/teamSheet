@@ -1,17 +1,19 @@
 package com.example.teamsheet.ui
 
-
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.Alignment
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 import com.example.teamsheet.data.Player
+
 
 @Composable
 fun MainScreen() {
@@ -57,25 +59,64 @@ fun MainScreen() {
 
         LazyColumn {
             items(players) { player ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Text(
-                        text = "${player.name} ${if (player.isReserve) "(Reserve)" else ""}",
-                        style = MaterialTheme.typography.bodyLarge
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(modifier = Modifier.fillMaxWidth()) {
+                    // Main Players Column
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Main Players", style = MaterialTheme.typography.titleMedium)
+                        LazyColumn {
+                            items(players.filter { !it.isReserve }) { player ->
+                                PlayerRow(player) {
+                                    players = players.filterNot { it.id == player.id }
+                                }
+                            }
+                        }
+                    }
+
+                    // Divider Line
+                    Box(
+                        modifier = Modifier
+                            .width(1.dp)
+                            .fillMaxHeight()
+                            .padding(horizontal = 8.dp)
+                            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
                     )
-                    IconButton(onClick = {
-                        players = players.filterNot { it.id == player.id }
-                    }) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Remove player"
-                        )
+
+                    // Reserve Players Column
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Reserve Players", style = MaterialTheme.typography.titleMedium)
+                        LazyColumn {
+                            items(players.filter { it.isReserve }) { player ->
+                                PlayerRow(player) {
+                                    players = players.filterNot { it.id == player.id }
+                                }
+                            }
+                        }
                     }
                 }
+
             }
         }
+
+    }
+
+
+@Composable
+fun PlayerRow(player: Player, onDelete: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(player.name, style = MaterialTheme.typography.bodyLarge)
+        IconButton(onClick = onDelete) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Remove player"
+            )
+        }
+    }
+}
 
