@@ -14,7 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.teamsheet.data.Player
 
-
 @Composable
 fun PlayerRow(player: Player, onDelete: () -> Unit) {
     Row(
@@ -33,85 +32,93 @@ fun PlayerRow(player: Player, onDelete: () -> Unit) {
     }
 }
 
-
 @Composable
 fun MainScreen() {
     var playerName by remember { mutableStateOf("") }
     var isReserve by remember { mutableStateOf(false) }
     var players by remember { mutableStateOf(listOf<Player>()) }
 
-    Column(modifier = Modifier.padding(16.dp)) {
-        OutlinedTextField(
-            value = playerName,
-            onValueChange = { playerName = it },
-            label = { Text("Player Name") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(
-                checked = isReserve,
-                onCheckedChange = { isReserve = it }
-            )
-            Text("Reserve Player")
-        }
-
-        Button(
-            onClick = {
-                if (playerName.isNotBlank()) {
-                    val newPlayer = Player(
-                        id = (players.maxOfOrNull { it.id } ?: 0) + 1,
-                        name = playerName,
-                        isReserve = isReserve
-                    )
-                    players = players + newPlayer
-                    playerName = ""
-                    isReserve = false
-                }
-            },
-            modifier = Modifier.padding(top = 8.dp)
+    Box(modifier = Modifier.fillMaxSize()) {
+        // Player display area
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(bottom = 100.dp) // Leave space for input section
         ) {
-            Text("Add Player")
-        }
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        Row(modifier = Modifier.fillMaxWidth()) {
-            // Main Players Column
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Main Players", style = MaterialTheme.typography.titleMedium)
-                LazyColumn {
-                    items(players.filter { !it.isReserve }) { player ->
-                        PlayerRow(player) {
-                            players = players.filterNot { it.id == player.id }
-                        }
+            Text("Main", style = MaterialTheme.typography.titleMedium)
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                items(players.filter { !it.isReserve }) { player ->
+                    PlayerRow(player) {
+                        players = players.filterNot { it.id == player.id }
                     }
                 }
             }
 
-            // Divider
-            Box(
-                modifier = Modifier
-                    .width(1.dp)
-                    .fillMaxHeight()
-                    .padding(horizontal = 8.dp)
-                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
-            )
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Reserve Players Column
-            Column(modifier = Modifier.weight(1f)) {
-                Text("Reserve Players", style = MaterialTheme.typography.titleMedium)
-                LazyColumn {
-                    items(players.filter { it.isReserve }) { player ->
-                        PlayerRow(player) {
-                            players = players.filterNot { it.id == player.id }
-                        }
+            Text("Reserve", style = MaterialTheme.typography.titleMedium)
+            LazyColumn(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                items(players.filter { it.isReserve }) { player ->
+                    PlayerRow(player) {
+                        players = players.filterNot { it.id == player.id }
                     }
                 }
+            }
+        }
+
+        // Input area fixed at the bottom
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .background(MaterialTheme.colorScheme.surface)
+                .padding(16.dp)
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                OutlinedTextField(
+                    value = playerName,
+                    onValueChange = { playerName = it },
+                    label = { Text("Player Name") },
+                    modifier = Modifier.weight(1f)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    onClick = {
+                        if (playerName.isNotBlank()) {
+                            val newPlayer = Player(
+                                id = (players.maxOfOrNull { it.id } ?: 0) + 1,
+                                name = playerName,
+                                isReserve = isReserve
+                            )
+                            players = players + newPlayer
+                            playerName = ""
+                            isReserve = false
+                        }
+                    }
+                ) {
+                    Text("Add")
+                }
+            }
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(top = 8.dp)
+            ) {
+                Checkbox(
+                    checked = isReserve,
+                    onCheckedChange = { isReserve = it }
+                )
+                Text("Reserve Player")
             }
         }
     }
 }
-
-
-
