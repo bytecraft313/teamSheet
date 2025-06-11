@@ -16,6 +16,25 @@ import com.example.teamsheet.data.Player
 
 
 @Composable
+fun PlayerRow(player: Player, onDelete: () -> Unit) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(player.name, style = MaterialTheme.typography.bodyLarge)
+        IconButton(onClick = onDelete) {
+            Icon(
+                imageVector = Icons.Default.Delete,
+                contentDescription = "Remove player"
+            )
+        }
+    }
+}
+
+
+@Composable
 fun MainScreen() {
     var playerName by remember { mutableStateOf("") }
     var isReserve by remember { mutableStateOf(false) }
@@ -57,66 +76,42 @@ fun MainScreen() {
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        LazyColumn {
-            items(players) { player ->
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Row(modifier = Modifier.fillMaxWidth()) {
-                    // Main Players Column
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Main Players", style = MaterialTheme.typography.titleMedium)
-                        LazyColumn {
-                            items(players.filter { !it.isReserve }) { player ->
-                                PlayerRow(player) {
-                                    players = players.filterNot { it.id == player.id }
-                                }
-                            }
-                        }
-                    }
-
-                    // Divider Line
-                    Box(
-                        modifier = Modifier
-                            .width(1.dp)
-                            .fillMaxHeight()
-                            .padding(horizontal = 8.dp)
-                            .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
-                    )
-
-                    // Reserve Players Column
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Reserve Players", style = MaterialTheme.typography.titleMedium)
-                        LazyColumn {
-                            items(players.filter { it.isReserve }) { player ->
-                                PlayerRow(player) {
-                                    players = players.filterNot { it.id == player.id }
-                                }
-                            }
+        Row(modifier = Modifier.fillMaxWidth()) {
+            // Main Players Column
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Main Players", style = MaterialTheme.typography.titleMedium)
+                LazyColumn {
+                    items(players.filter { !it.isReserve }) { player ->
+                        PlayerRow(player) {
+                            players = players.filterNot { it.id == player.id }
                         }
                     }
                 }
-
             }
-        }
 
-    }
-
-
-@Composable
-fun PlayerRow(player: Player, onDelete: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
-        Text(player.name, style = MaterialTheme.typography.bodyLarge)
-        IconButton(onClick = onDelete) {
-            Icon(
-                imageVector = Icons.Default.Delete,
-                contentDescription = "Remove player"
+            // Divider
+            Box(
+                modifier = Modifier
+                    .width(1.dp)
+                    .fillMaxHeight()
+                    .padding(horizontal = 8.dp)
+                    .background(MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f))
             )
+
+            // Reserve Players Column
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Reserve Players", style = MaterialTheme.typography.titleMedium)
+                LazyColumn {
+                    items(players.filter { it.isReserve }) { player ->
+                        PlayerRow(player) {
+                            players = players.filterNot { it.id == player.id }
+                        }
+                    }
+                }
+            }
         }
     }
 }
+
+
 
